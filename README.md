@@ -2,7 +2,7 @@
 
 ## Overview
 
-RADARs is a web app that streamlines AI transparency reporting for early-stage startups. By combining smart templates with real-time AI guidance, our tool helps startups align with industry best practices, identify risks, get actioanble suggestions, and communicate transparency efforts effectively to stakeholders.
+RADARs is a web app that streamlines AI transparency reporting for early-stage startups. By combining smart templates with real-time AI guidance, our tool helps startups align with industry best practices, identify risks, get actionable suggestions, and communicate transparency efforts effectively to stakeholders.
 
 ## Getting Started
 
@@ -33,7 +33,7 @@ Ensure you have:
 
 ### Step 1: Access the Prototype
 
-- Visit the live prototype here: [https://brightpath-report.webflow.io/ ](https://brightpath-report.webflow.io/ )
+- Visit the live prototype here: [https://brightpath-report.webflow.io/](https://brightpath-report.webflow.io/)
 
 ### Step 2: Enter Basic Information
 
