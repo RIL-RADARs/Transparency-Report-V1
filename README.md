@@ -113,7 +113,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 For feedback or support, please contact our team or submit an issue in the repository.
 
----
-
-⭐ If you find this project useful, give us a star on GitHub! ⭐
-
