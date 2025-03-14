@@ -48,7 +48,7 @@ You can explore and test the RADARs prototype here:
      ![image](https://github.com/user-attachments/assets/588b89e6-841c-471a-a20c-3cd4440e1b9c)
    - **Multi Choice**:
 
-      Add? , Configure the choice values in "Custom attributes", add Name as "ms-code-select-options", Value in format like "Commercial License,Proprietary,Public Domain,Fair Use Claim,Other", seperating each choice with a single ",".
+     We used custom code from Memberstack. You can find detailed instructions [here](https://www.memberstack.com/scripts/custom-multi-selects). Configure the choice values in "Custom attributes", add Name as "ms-code-select-options", Value in format like "Commercial License,Proprietary,Public Domain,Fair Use Claim,Other", seperating each choice with a single ",".
      ![image](https://github.com/user-attachments/assets/0a4b53b5-541c-493b-b703-57a8039cd6e1)
 6. Create **Report Page**
    - This page is to display the content of the report to users.
