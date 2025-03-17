@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/39e4ba04-3ce5-4b8a-97ae-82b0fdaf60c5)# Installation Guide
+# Installation Guide
 
 This guide provides step-by-step instructions on how to:
 1. **Use the RADARs prototype**
