@@ -955,24 +955,151 @@ Zapier automates the connection between **Webflow, Firebase, and AI processing**
      8. Check that the output includes matched risks and reference sections from Microsoft’s standard.
       ![image](https://github.com/user-attachments/assets/9600a525-fa25-4a4e-92e1-963800131cd0)
 
- - 14 **Action**: 
-     This step
+ - 14 **Action**: Provide specific recommendations to practices that pose business risks
+     This Zap uses **API Calls** to analyze AI practices flagged as risky and generate structured improvement recommendations based on responsible AI frameworks.Here's the example of Claude.
+      1. **In Zapier**, add a new action.  
+      2. Select **"Anthropic (Claude)"** as the action app.  
+      3. Choose **"Send Message"** as the action event.  
+      4. Click **Continue** to configure the message prompt.  
+      5. Under **User Message**, set the following:  
+         - **Prompt**: Select the `prompt` field from Zap 13, which contains the **user’s practices** and the **matched Responsible AI Standard sections**.  
+         - **Message Instruction**: Include a structured instruction for Claude to analyze the input and provide detailed improvement suggestions.  
+      ![image](https://github.com/user-attachments/assets/dce51e67-a0e8-49f9-bfa9-44c8451008c9)
 
- - 15 **Action**: 
-     This step
 
- - 16 **Action**: 
-     This step
+ - 15 **Action**: Validation on Recommendations Accuracy
+     This step **validates the AI-generated recommendations** to ensure they accurately align with the **Matched Responsible AI Standard requirements**. It verifies correctness, notes inaccuracies, and refines the output for **final analysis**. You can add multiple API calls for validation purpose. (recommended)
+      ![image](https://github.com/user-attachments/assets/115a4937-187b-47de-a19e-9fb357b8cf1e)
+      1. **In Zapier**, add a new action.  
+      2. Select **"Anthropic (Claude)"** as the action app.  
+      3. Choose **"Send Message"** as the action event.  
+      4. Click **Continue** to configure the message prompt.  
+      5. Under **User Message**, set the following:  
+         - **Expert Recommendations**: Use the `analysis_results` field from Zap 14, containing **generated recommendations**.  
+         - **Raw User RiskyPractices with Matched AI Standard**: Use the `prompt` field from Zap 13, ensuring validation against **original risk areas**.  
 
- - 17 **Action**: 
-     This step
+ - 16 **Action**: Process and Format Validated Recommendations
+     This step **processes the validated Responsible AI recommendations from the previous step**, formats them into structured text, and prepares them for **storage and display in reports**.
+      ![image](https://github.com/user-attachments/assets/8b18d956-11e1-4c6e-9ae9-8fffbb7b0c65)
+      1. **In Zapier**, add a new action.  
+      2. Select **"Code by Zapier"** as the action app.  
+      3. Choose **"Run Javascript"** as the action event.  
+      4. Click **Continue** to configure the code step.  
+      5. Under **Input Data**, set the following:  
+         - **Key:** `raw_json_output`  
+         - **Value:** Select `analysis_results` JSON output from **Zap 15** (validated recommendations).
+      ![image](https://github.com/user-attachments/assets/45bf8bda-536c-47e3-bd3d-f10bace721ed)
+      6. **In the code editor**, add code that **parses, processes, and structures the validated AI recommendations**:
+         - **Extracts relevant details**: AI practice, associated risks, and suggested improvements. 
+         - **Formats recommendations** into structured text, ensuring **readability and clarity**.  
+         - **Filters out "No risky practices identified"** entries to **avoid clutter**.  
+         - **Adds numbering (e.g., "analysis_results 1", "analysis_results 2")** for structured outputs.
+         ```
+         // 1) Retrieve the raw JSON string from the previous LLM step
+         const rawJson = inputData.raw_json_output;
+         
+         try {
+           // 2) Parse the raw string into a JS object
+           const parsed = JSON.parse(rawJson);
+         
+           // We'll build a new object "outputFields" so that each array item becomes 
+           // "analysis_results 1", "analysis_results 2", etc.
+           let outputFields = {};
+         
+           // If we have an array: parsed.analysis_results
+           if (parsed.analysis_results && Array.isArray(parsed.analysis_results)) {
+             parsed.analysis_results.forEach((item, index) => {
+               // The key "analysis_results 1" or "analysis_results 2" etc.
+               const keyName = `analysis_results ${index + 1}`;
+         
+               // Extract fields
+               const section = item["section"] || "";
+               const practice = item["your practice"] || "";
+               const risky = item["why it is risky"] || "";
+         
+               // If recommendations is an array => join with bullet
+               let recValue = item["recommendations"];
+               if (Array.isArray(recValue)) {
+                 recValue = recValue.join("\n- ");  // produce bullet lines
+                 recValue = `- ${recValue}`.trim(); 
+               } else if (typeof recValue !== "string") {
+                 recValue = "";
+               }
+         
+               // If "your practice" is exactly "No risky practices identified", skip entire item
+               if (practice === "No risky practices identified") {
+                 // do nothing: no outputFields[keyName], so we won't see "analysis_results 2" etc.
+                 return; 
+               }
+         
+               // Construct a single text block with line breaks
+               let bigText = 
+                 `Your Practice: ${practice}\n\n` +
+                 `Why It Is Risky: ${risky}\n\n` +
+                 `Recommendations:\n${recValue}\n\n`;
+         
+               // Store in outputFields
+               outputFields[keyName] = bigText.trim();
+             });
+           }
+         
+           // Return the final object
+           return outputFields;
+         
+         } catch (error) {
+           return {
+             error: "Invalid JSON or parse error",
+             details: error.toString()
+           };
+         }
+         
+         ```
 
- - 18 **Action**: 
-     This step
+ - 17 **Action**: Store Customized Recommendations
+     This step **saves the structured Responsible AI recommendations into Firestore**, associating them with the respective user for future reference and report updates.
+      1. **In Zapier**, add a new action.  
+      2. Select **"Firebase / Firestore"** as the action app.  
+      3. Choose **"Create Cloud Firestore Document"** as the action event.  
+      4. Click **Continue** to configure the Firestore step.  
+      5. Under **Collection**, set the value to:  
+         - `Generated_Customized_Recommendations`  
+      6. Set **Convert Numerics** to **True**.  
+      7. Under **Document ID**, set:  
+         - **Key:** `Email`  
+         - **Value:** Select the user’s email from the previous steps.  
+      8. Under **Data**, map the sections to the formatted analysis results from **Zap 16**.
+      ![image](https://github.com/user-attachments/assets/e766e43a-0aed-44f8-8f4b-27ed96a03eaf)
+      ![image](https://github.com/user-attachments/assets/b524b087-2c4e-4d0c-ac78-42e9a7184245)
 
- - 19 **Action**: 
-     This step 
+ - 18 **Action**: Update Report & Recommendations in Webflow
+     This step **updates the AI-generated assessment report and compliance recommendations in Webflow**, making the results accessible to users.
+      1. **In Zapier**, add a new action.  
+      2. Select **"Webflow"** as the action app.  
+      3. Choose **"Update Live Item"** as the action event.  
+      4. Click **Continue** to configure Webflow.
+      5. Configure your report contents and map the Required Fields:
+      ![image](https://github.com/user-attachments/assets/8aae6930-c735-4360-a24d-95975f07a500)
+      6. Click **Continue** to proceed.  
+      7. Click **Test** to verify Webflow updates with the correct data.  
+      8. Once successful, **Publish** the Zap to make it live.  
 
+ - 19 **Action**: Update Response Status in Firebase Firestore 
+     This step **updates the response status in Firebase Firestore** to indicate that the recommendation process has been completed for a given user.
+      1. **In Zapier**, add a new action.  
+      2. Select **"Firebase / Firestore"** as the action app.  
+      3. Choose **"Create Cloud Firestore Document"** as the action event.  
+      4. Click **Continue** to configure the Firestore settings.  
+      5. Under **Setup Action**, configure the following:
+         ![image](https://github.com/user-attachments/assets/c2dc1529-15bc-45a2-b99d-4eeb1e19fb9a)
+         - **Collection**: `Response_Status`
+         - **Convert Numerics**: Set to `True`
+         - **Document ID**: Select the user's email (`Field Data Email`)
+         - **Data Fields**:
+           - `slug`: Select **Final Slug** from the previous step.
+           - `completed`: Set this field to `true` to mark completion.
+           - `Item ID`: Select the corresponding **ID** from Webflow.
+      7. Click **Continue**, then **Test & Review** to ensure the Firestore record is updated.        ![image](https://github.com/user-attachments/assets/8d9fbabb-0448-491a-a6bf-0824bc552c56)
+      8. If successful, click **Publish** to finalize the step.
 
 3. Test your Zapier workflows.
 
