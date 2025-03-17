@@ -44,6 +44,7 @@ You can explore and test the RADARs prototype here:
 2. **Complete the Tailored Questionnaire** – Answer questions related to AI practices, such as data handling and ethical risks.
 3. **Generate Transparency Report** – Click **Generate Report** to receive a comprehensive AI transparency assessment.
 
+[⬆ Back to Top](#table-of-contents)
 ---
 
 ## 2️⃣ How to Build Your Own Web App
@@ -84,6 +85,7 @@ You can explore and test the RADARs prototype here:
      ![image](https://github.com/user-attachments/assets/29e5a971-67a4-4a6d-a089-87e6ac9d87df)
 7. Customize the page designs to match your brand.
 
+[⬆ Back to Top](#table-of-contents)
 ---
 
 ### **Step 2: Set Up a Firebase Database**
