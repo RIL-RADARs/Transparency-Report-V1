@@ -4,6 +4,34 @@ This guide provides step-by-step instructions on how to:
 1. **Use the RADARs prototype**
 2. **Build a similar Webflow-based web app** for AI transparency reporting
 
+## 📌 Table of Contents
+
+- [1️⃣ Access the Live Prototype](#1️⃣-access-the-live-prototype)
+- [2️⃣ How to Build Your Own Web App](#2️⃣-how-to-build-your-own-web-app)
+  - [Set Up a Webflow Site](#step-1-set-up-a-webflow-site)
+  - [Set Up a Firebase Database](#step-2-set-up-a-firebase-database)
+  - [Automate Data Processing with Zapier](#step-3-automate-data-processing-with-zapier)
+    - [Zap 1: Webflow Form Submission](#zap-1-webflow-form-submission)
+    - [Zap 2: Generate Unique Slug](#zap-2-generate-unique-slug)
+    - [Zap 3: Webflow CMS - Create Live Item](#zap-3-webflow-cms-create-live-item)
+    - [Zap 4: Firebase Firestore - Store User Responses](#zap-4-firebase-firestore-store-user-responses)
+    - [Zap 5: AI Report Generation](#zap-5-ai-report-generation)
+    - [Zap 6: Validate AI-Generated Reports](#zap-6-validate-ai-generated-reports)
+    - [Zap 7: Format AI-Generated Reports](#zap-7-format-ai-generated-reports)
+    - [Zap 8-10: Store User-Editable Content in Firebase](#zap-8-10-store-user-editable-content-in-firebase)
+    - [Zap 11: Calculate AI Risk Scores](#zap-11-calculate-ai-risk-scores)
+    - [Zap 12: Store Scores in Firebase](#zap-12-store-scores-in-firebase)
+    - [Zap 13: Match Practice with AI Risk Frameworks](#zap-13-match-practice-with-ai-risk-frameworks)
+    - [Zap 14: Provide Responsible AI Recommendations](#zap-14-provide-responsible-ai-recommendations)
+    - [Zap 15: Validate Recommendations](#zap-15-validate-recommendations)
+    - [Zap 16: Process and Format Validated Recommendations](#zap-16-process-and-format-validated-recommendations)
+    - [Zap 17: Store Customized Recommendations](#zap-17-store-customized-recommendations)
+    - [Zap 18: Update Report & Recommendations in Webflow](#zap-18-update-report--recommendations-in-webflow)
+    - [Zap 19: Update Response Status in Firebase Firestore](#zap-19-update-response-status-in-firebase-firestore)
+- [4️⃣ Build a Survey Flow](#4️⃣-build-a-survey-flow)
+- [5️⃣ Configure AI Report](#5️⃣-configure-ai-report)
+- [6️⃣ Deploy Your Webflow App](#6️⃣-deploy-your-webflow-app)
+
 ---
 
 ## 1️⃣ Access the Live Prototype
@@ -55,6 +83,8 @@ You can explore and test the RADARs prototype here:
      You can use elements from "Basic", "Typography", and Grid or Columns in "others" to make this page.
      ![image](https://github.com/user-attachments/assets/29e5a971-67a4-4a6d-a089-87e6ac9d87df)
 7. Customize the page designs to match your brand.
+
+---
 
 ### **Step 2: Set Up a Firebase Database**
 RADARs uses **Firebase Firestore** to store user inputs and reports.
@@ -308,7 +338,7 @@ RADARs uses **Firebase Firestore** to store user inputs and reports.
       });
       
       ``` 
-
+---
    2️⃣ **Check Report Generation Status**  
    - The **`checkStatus` function** is a Firebase Cloud Function used to **verify if a report has been generated** for a given user email. It interacts with Firestore to check the status of a user's response and returns relevant metadata.
    - #### 🛠️ **What This Function Does**
@@ -524,6 +554,9 @@ RADARs uses **Firebase Firestore** to store user inputs and reports.
       ```     
 6. Copy Firebase configuration and store it in a `.env` file (if applicable).
 
+[⬆ Back to Top](#table-of-contents)
+---
+
 ### **Step 3: Automate Data Processing with Zapier**
 Zapier automates the connection between **Webflow, Firebase, and AI processing**. This allows user-submitted data to flow through the system and generate AI transparency reports.
 
@@ -536,86 +569,102 @@ Zapier automates the connection between **Webflow, Firebase, and AI processing**
 
 1. Sign up for [Zapier](https://zapier.com/).
 2. **Create the following Zaps**:
-   - 1 **Trigger**: Webflow Form Submission
-      1. **Go to Zapier** and create a new **Zap**.
-      2. Select **"Webhooks by Zapier"** as the trigger app.
-      3. Choose **"Catch Hook"** as the trigger event.
-      4. Copy the **Webhook URL** provided by Zapier.
-      ![image](https://github.com/user-attachments/assets/feb472d3-99ac-43c5-bcbb-16e2f3e6b8a3) 
-      5. **Go to Webflow** and navigate to the form settings.
-      6. In the **"Form Block Settings"** section "Connections", paste the **Zapier Webhook URL** in "Action".
-      ![image](https://github.com/user-attachments/assets/1646d26d-0a0f-4365-b363-23bb2215a629)
-      7. Set the method to **POST**.
-      8. **Save & Publish** your Webflow project.
-      9. Return to Zapier and **test the trigger** by submitting the Webflow form.
-      📌 **Expected Outcome**: When a user submits the form in Webflow, Zapier captures the data.
-   - 2 **Action**: Code by Zapier
-     This step **generates a unique slug** based on the user's name. The slug is used as a unique identifier for reports and database records.
-     ![image](https://github.com/user-attachments/assets/3c52369e-f79d-44d5-ba2e-c291dd34eb78)
-      1. **In Zapier**, add a new action.
-      2. Select **"Code by Zapier"** as the action app.
-      3. Choose **"Run JavaScript"** as the action event.
-      4. Click **Continue** to configure the code step.
-      5. Under **Input Data**, set the following:
-         - **Key:** `userName`
-         - **Value:** Select the user's name from the Webflow form submission (Step 1).
-      6. **In the code editor**, paste the following JavaScript code:
-          ```
-         // 1) Get user input (e.g., userName = "Jane"):
-         let userName = inputData.userName;  // For example, "Jane"
+
+---
+#### Zap 1: Webflow Form Submission
+
+1. **Go to Zapier** and create a new **Zap**.
+2. Select **"Webhooks by Zapier"** as the trigger app.
+3. Choose **"Catch Hook"** as the trigger event.
+4. Copy the **Webhook URL** provided by Zapier.
+![image](https://github.com/user-attachments/assets/feb472d3-99ac-43c5-bcbb-16e2f3e6b8a3) 
+5. **Go to Webflow** and navigate to the form settings.
+6. In the **"Form Block Settings"** section "Connections", paste the **Zapier Webhook URL** in "Action".
+![image](https://github.com/user-attachments/assets/1646d26d-0a0f-4365-b363-23bb2215a629)
+7. Set the method to **POST**.
+8. **Save & Publish** your Webflow project.
+9. Return to Zapier and **test the trigger** by submitting the Webflow form.
+📌 **Expected Outcome**: When a user submits the form in Webflow, Zapier captures the data.
+
+[⬆ Back to Top](#table-of-contents)
+---
+
+#### Zap 2: Generate Unique Slug
+
+This step **generates a unique slug** based on the user's name. The slug is used as a unique identifier for reports and database records.
+![image](https://github.com/user-attachments/assets/3c52369e-f79d-44d5-ba2e-c291dd34eb78)
+1. **In Zapier**, add a new action.
+2. Select **"Code by Zapier"** as the action app.
+3. Choose **"Run JavaScript"** as the action event.
+4. Click **Continue** to configure the code step.
+5. Under **Input Data**, set the following:
+   - **Key:** `userName`
+   - **Value:** Select the user's name from the Webflow form submission (Step 1).
+6. **In the code editor**, paste the following JavaScript code:
+    ```
+   // 1) Get user input (e.g., userName = "Jane"):
+   let userName = inputData.userName;  // For example, "Jane"
+   
+   // 2) Perform slugify (convert spaces to "-", lowercase, etc.)
+   function slugify(str) {
+     return str
+       .toLowerCase()
+       .replace(/[^a-z0-9]+/g, '-')  // Convert non-alphanumeric characters to "-"
+       .replace(/^-|-$/g, '')       // Remove leading and trailing "-"
+       .substring(0, 30);           // Limit to a maximum of 30 characters
+   }
+   
+   let baseSlug = slugify(userName); // "jane"
+   
+   // 3) To ensure uniqueness, add a random suffix
+   let random = Math.floor(Math.random() * 1000); // 0~999
+   let finalSlug = baseSlug + "-" + random; // "jane-543"
+   
+   // Output
+   return { finalSlug };
+   
+    ```
+8. Click **Continue**, then **Test & Review** to ensure the function works correctly.
          
-         // 2) Perform slugify (convert spaces to "-", lowercase, etc.)
-         function slugify(str) {
-           return str
-             .toLowerCase()
-             .replace(/[^a-z0-9]+/g, '-')  // Convert non-alphanumeric characters to "-"
-             .replace(/^-|-$/g, '')       // Remove leading and trailing "-"
-             .substring(0, 30);           // Limit to a maximum of 30 characters
-         }
-         
-         let baseSlug = slugify(userName); // "jane"
-         
-         // 3) To ensure uniqueness, add a random suffix
-         let random = Math.floor(Math.random() * 1000); // 0~999
-         let finalSlug = baseSlug + "-" + random; // "jane-543"
-         
-         // Output
-         return { finalSlug };
-         
-          ```
-      8. Click **Continue**, then **Test & Review** to ensure the function works correctly.
-         
-   - 3 **Action**: Webflow CMS - Create Live Item
-     This step **sends user input data** (including the generated slug) to **Webflow CMS** to store user reports.
-      1. **In Zapier**, add a new action.
-      2. Select **"Webflow"** as the app.
-      3. Choose **"Create Live Item"** as the action event.
-      4. Click **Continue** to configure the setup.
-      5. **Connect your Webflow account** (if not already connected).
-      6. Under **"Site"**, select the **Webflow project** where the reports will be stored.
-      7. Under **"Collection"**, select the correct **Webflow CMS Collection** (e.g., "Back-ends" in your setup).
-      ![image](https://github.com/user-attachments/assets/dfdefe02-6128-4ceb-a889-30f0a01c8d91)
-      **📌 Test and Publish**
-         1. Click **Test & Review** to verify that the data is correctly sent to Webflow.
-         2. Check **Webflow CMS** to confirm the new entry appears.
-         3. Click **Continue** and publish the Zap.
-    
-   - 4 **Action**: Firebase Firestore - Create Document
-     This step **saves user responses** from Webflow into **Firebase Firestore** for storage and later report generation.
-      1. **In Zapier**, add a new action.
-      2. Select **"Firebase Firestore"** as the app.
-      3. Choose **"Create Cloud Firestore Document"** as the action event.
-      4. Click **Continue** to configure the setup.
-      5. **Connect your Firebase account** (if not already connected).
-      6. Under **"Collection"**, enter the Firestore collection where the data should be stored:  
-         ✅ Example: `Question_Answer`
-      7. Under **"Document ID"**, set a unique identifier for each user submission:  
-         ✅ Example: Use **User Email** (`testingfelicity01@gmail.com`)  
-         This ensures each submission is stored under the corresponding user’s document.
-      ![image](https://github.com/user-attachments/assets/e0feae73-54b1-49b7-a34e-12d2d3a96fc6)
-      8. Under **"Data"**, map all user responses you need to Firestore fields.
-      9. Click **Test & Review** to verify that the data is correctly stored in Firestore.
-      ![image](https://github.com/user-attachments/assets/efd45149-4ffa-4530-8be6-91cee4f059ff)
+[⬆ Back to Top](#table-of-contents)
+---
+
+#### Zap 3: Webflow CMS - Create Live Item
+
+This step **sends user input data** (including the generated slug) to **Webflow CMS** to store user reports.
+1. **In Zapier**, add a new action.
+2. Select **"Webflow"** as the app.
+3. Choose **"Create Live Item"** as the action event.
+4. Click **Continue** to configure the setup.
+5. **Connect your Webflow account** (if not already connected).
+6. Under **"Site"**, select the **Webflow project** where the reports will be stored.
+7. Under **"Collection"**, select the correct **Webflow CMS Collection** (e.g., "Back-ends" in your setup).
+![image](https://github.com/user-attachments/assets/dfdefe02-6128-4ceb-a889-30f0a01c8d91)
+**📌 Test and Publish**
+   1. Click **Test & Review** to verify that the data is correctly sent to Webflow.
+   2. Check **Webflow CMS** to confirm the new entry appears.
+   3. Click **Continue** and publish the Zap.
+
+[⬆ Back to Top](#table-of-contents)
+---
+
+#### Zap 4: Firebase Firestore - Store User Responses
+
+This step **saves user responses** from Webflow into **Firebase Firestore** for storage and later report generation.
+1. **In Zapier**, add a new action.
+2. Select **"Firebase Firestore"** as the app.
+3. Choose **"Create Cloud Firestore Document"** as the action event.
+4. Click **Continue** to configure the setup.
+5. **Connect your Firebase account** (if not already connected).
+6. Under **"Collection"**, enter the Firestore collection where the data should be stored:  
+   ✅ Example: `Question_Answer`
+7. Under **"Document ID"**, set a unique identifier for each user submission:  
+   ✅ Example: Use **User Email** (`testingfelicity01@gmail.com`)  
+   This ensures each submission is stored under the corresponding user’s document.
+![image](https://github.com/user-attachments/assets/e0feae73-54b1-49b7-a34e-12d2d3a96fc6)
+8. Under **"Data"**, map all user responses you need to Firestore fields.
+9. Click **Test & Review** to verify that the data is correctly stored in Firestore.
+![image](https://github.com/user-attachments/assets/efd45149-4ffa-4530-8be6-91cee4f059ff)
 
  - 5 **Action**: API Call - Generate AI Transparency Report
      This step sends user responses to **Claude AI** to generate a structured **AI transparency report**. Here's the example of Anthropic (Claude) API call.
