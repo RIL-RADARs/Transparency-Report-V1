@@ -1142,6 +1142,5 @@ RADARs uses **Inputflow** to create dynamic survey flows and branching logic.
 
 ### **Step 5: Deploy Your Webflow App**
 1. Publish your Webflow project using Webflow’s hosting.
-2. If using Firebase:
-   ```sh
-   firebase deploy
+![image](https://github.com/user-attachments/assets/00c5345f-6063-4a15-ac9f-ba7785569c1e)
+2. Test your pages and functions.
