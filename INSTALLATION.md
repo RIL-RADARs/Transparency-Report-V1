@@ -568,9 +568,11 @@ Zapier automates the connection between **Webflow, Firebase, and AI processing**
 ---
 
 1. Sign up for [Zapier](https://zapier.com/).
-2. **Create the following Zaps**:
+2. **Create the following Zaps**
+3. Test your Zapier workflows.
 
 ---
+
 #### Zap 1: Webflow Form Submission
 
 1. **Go to Zapier** and create a new **Zap**.
@@ -704,463 +706,509 @@ This step **saves user responses** from Webflow into **Firebase Firestore** for 
   7. **Check the output** to ensure it aligns with user input.
   8. **Publish the Zap** to automate report verification.
 
- - 7 **Action**: Format AI-Generated Report into JSON
-     This step ensures the AI-generated report is correctly structured in JSON format before storing it in Firebase.
-      1. **Add a "Code by Zapier" Action**  
-         - Select **Run JavaScript** as the action event.
-      2. **Process AI Output**  
-         - Take the AI-generated response as input.
-         - Parse and format it into a valid JSON object.
-           ![image](https://github.com/user-attachments/assets/58b8b366-5ef6-4195-bfb5-3487249c3eb5)
-         ```
-           // Parse the input data
-           let rawInput = inputData.json_input;
-      
-           // Process and format the JSON
-           try {
-               // Parse the JSON data
-               let parsedData = JSON.parse(rawInput);
-      
-               // Format the JSON with indentation (without adding extra escape characters)
-               let formattedJson = JSON.stringify(parsedData, null, 2);
-      
-               // Return the valid JSON object, not as a string
-               return JSON.parse(formattedJson);
-      
-           } catch (error) {
-               // If JSON parsing fails, return an error message
-               return { error: "Invalid JSON format" };
-           }
-         ```          
-      3. **Handle Errors**  
-         - If the AI response is not in a valid JSON format, return an error message.
-      4. Click **Continue**, then **Test & Review** to ensure the JSON is correctly formatted.
-         ![image](https://github.com/user-attachments/assets/5f0362a0-c088-42a5-a46b-ef391ac03dbc)
+[⬆ Back to Top](#table-of-contents)
+---
 
- - 8-10 **Store User-Editable Content in Firebase**:
-   This step **saves user-editable sections of the AI-generated report** to Firebase Firestore for structured storage and retrieval.
-      ![image](https://github.com/user-attachments/assets/3d64d567-6e83-4c85-b6e3-33a56aa27182)
-     1. **In Zapier**, add a new action.
-     2. Select **"Firebase / Firestore"** as the app.
-     3. Choose **"Create Cloud Firestore Document"** as the action event.
-     4. **Connect your Firebase account**.
-     5. **Configure the request**:
-        - Set **Collection** to the relevant section (e.g., `Generated_[Section-Name]`).
-        - Use the **user's email** as the Document ID.
-        - Map the **necessary fields** (e.g., Industry, Product Details, Transparency Info) from the structured AI-generated report.
-     6. **Run a test** to confirm that the document is successfully created in Firestore.
-     7. **Check the output** to ensure it contains the correct user-editable content.
-     8. **Publish the Zap** to store and manage the editable report sections dynamically.
+#### Zap 7: Format AI-Generated Reports
 
- - 11 **Action**: Calculate Scores
-     This step analyzes user responses, extracts relevant sections, and assigns risk scores based on predefined criteria, helping evaluate compliance levels dynamically. It categorizes risks as High, Medium, or Low and structures the results for further processing or storage.
-     1. **In Zapier**, add a new action.
-     2. Select **"Code by Zapier"** as the app.
-     3. Choose **"Run JavaScript"** as the action event.
-     4. **Click Continue** to configure the code step.
-     5. Under **Input Data**, set:
-        - **User ID:** Retrieve from user responses.
-        - **Relevant Fields:** Map compliance-related answers (e.g., privacy, security, data-sharing).
-      ![image](https://github.com/user-attachments/assets/cf3feaa8-0832-4ac2-8c29-a63042cc9e7c)
-     6. **In the code editor**, paste the following JavaScript code:
-      ```
-      let sectionScores = {};
-      let sectionSeverity = {};  
-      let sectionNames = {};  
-      let userId = inputData["user_id"] || "unknown_user"; 
-      
-      console.log("Received data:", JSON.stringify(inputData, null, 2));
-      
-      for (let key in inputData) {
-          if (key === "user_id" || !inputData[key] || inputData[key].includes("--placeholder--")) continue; 
-      
-          let value = inputData[key];
-          console.log("Processing field:", key, "Value:", value); 
-      
-          // Extract section name and question number (e.g., "Privacy & Security_2_2")
-          let sectionMatch = key.match(/Case \d+ ([^_]+)_\d+_\d+/);
-          if (sectionMatch) {
-              let sectionName = sectionMatch[1];  // Extracted section name (e.g., "Privacy & Security")
-      
-              // Ensure section exists in the tracking objects
-              if (!sectionScores[sectionName]) {
-                  sectionScores[sectionName] = 0;
-                  sectionSeverity[sectionName] = "Medium";  
-                  sectionNames[sectionName] = sectionName;
-              }
-      
-              // Extract score (if "|1" exists)
-              let scoreMatch = value.match(/\|(\d+)$/);
-              if (scoreMatch) {
-                  let score = parseInt(scoreMatch[1], 10);
-                  sectionScores[sectionName] += score;  
-              }
-      
-              // Detect High Risk (Improved method)
-              if (value.toLowerCase().includes("high risk")) {
-                  sectionSeverity[sectionName] = "High";  
-              }
+ This step ensures the AI-generated report is correctly structured in JSON format before storing it in Firebase.
+  1. **Add a "Code by Zapier" Action**  
+     - Select **Run JavaScript** as the action event.
+  2. **Process AI Output**  
+     - Take the AI-generated response as input.
+     - Parse and format it into a valid JSON object.
+       ![image](https://github.com/user-attachments/assets/58b8b366-5ef6-4195-bfb5-3487249c3eb5)
+     ```
+       // Parse the input data
+       let rawInput = inputData.json_input;
+  
+       // Process and format the JSON
+       try {
+           // Parse the JSON data
+           let parsedData = JSON.parse(rawInput);
+  
+           // Format the JSON with indentation (without adding extra escape characters)
+           let formattedJson = JSON.stringify(parsedData, null, 2);
+  
+           // Return the valid JSON object, not as a string
+           return JSON.parse(formattedJson);
+  
+       } catch (error) {
+           // If JSON parsing fails, return an error message
+           return { error: "Invalid JSON format" };
+       }
+     ```          
+  3. **Handle Errors**  
+     - If the AI response is not in a valid JSON format, return an error message.
+  4. Click **Continue**, then **Test & Review** to ensure the JSON is correctly formatted.
+     ![image](https://github.com/user-attachments/assets/5f0362a0-c088-42a5-a46b-ef391ac03dbc)
+
+
+[⬆ Back to Top](#table-of-contents)
+---
+
+#### Zap 8-10: Store User-Editable Content in Firebase
+
+This step **saves user-editable sections of the AI-generated report** to Firebase Firestore for structured storage and retrieval.
+  ![image](https://github.com/user-attachments/assets/3d64d567-6e83-4c85-b6e3-33a56aa27182)
+ 1. **In Zapier**, add a new action.
+ 2. Select **"Firebase / Firestore"** as the app.
+ 3. Choose **"Create Cloud Firestore Document"** as the action event.
+ 4. **Connect your Firebase account**.
+ 5. **Configure the request**:
+    - Set **Collection** to the relevant section (e.g., `Generated_[Section-Name]`).
+    - Use the **user's email** as the Document ID.
+    - Map the **necessary fields** (e.g., Industry, Product Details, Transparency Info) from the structured AI-generated report.
+ 6. **Run a test** to confirm that the document is successfully created in Firestore.
+ 7. **Check the output** to ensure it contains the correct user-editable content.
+ 8. **Publish the Zap** to store and manage the editable report sections dynamically.
+
+[⬆ Back to Top](#table-of-contents)
+---
+
+#### Zap 11: Calculate AI Risk Scores
+
+  This step analyzes user responses, extracts relevant sections, and assigns risk scores based on predefined criteria, helping evaluate compliance levels dynamically. It categorizes risks as High, Medium, or Low and structures the results for further processing or storage.
+  1. **In Zapier**, add a new action.
+  2. Select **"Code by Zapier"** as the app.
+  3. Choose **"Run JavaScript"** as the action event.
+  4. **Click Continue** to configure the code step.
+  5. Under **Input Data**, set:
+    - **User ID:** Retrieve from user responses.
+    - **Relevant Fields:** Map compliance-related answers (e.g., privacy, security, data-sharing).
+  ![image](https://github.com/user-attachments/assets/cf3feaa8-0832-4ac2-8c29-a63042cc9e7c)
+  6. **In the code editor**, paste the following JavaScript code:
+  ```
+  let sectionScores = {};
+  let sectionSeverity = {};  
+  let sectionNames = {};  
+  let userId = inputData["user_id"] || "unknown_user"; 
+  
+  console.log("Received data:", JSON.stringify(inputData, null, 2));
+  
+  for (let key in inputData) {
+      if (key === "user_id" || !inputData[key] || inputData[key].includes("--placeholder--")) continue; 
+  
+      let value = inputData[key];
+      console.log("Processing field:", key, "Value:", value); 
+  
+      // Extract section name and question number (e.g., "Privacy & Security_2_2")
+      let sectionMatch = key.match(/Case \d+ ([^_]+)_\d+_\d+/);
+      if (sectionMatch) {
+          let sectionName = sectionMatch[1];  // Extracted section name (e.g., "Privacy & Security")
+  
+          // Ensure section exists in the tracking objects
+          if (!sectionScores[sectionName]) {
+              sectionScores[sectionName] = 0;
+              sectionSeverity[sectionName] = "Medium";  
+              sectionNames[sectionName] = sectionName;
+          }
+  
+          // Extract score (if "|1" exists)
+          let scoreMatch = value.match(/\|(\d+)$/);
+          if (scoreMatch) {
+              let score = parseInt(scoreMatch[1], 10);
+              sectionScores[sectionName] += score;  
+          }
+  
+          // Detect High Risk (Improved method)
+          if (value.toLowerCase().includes("high risk")) {
+              sectionSeverity[sectionName] = "High";  
           }
       }
-      
-      // **Ensure all sections have correct severity levels**
-      for (let section in sectionScores) {
-          if (sectionScores[section] === 0) {
-              sectionSeverity[section] = "Low";  // If no bad practices are detected, set to "Low"
-          } else if (!sectionSeverity[section]) {
-              sectionSeverity[section] = "Medium";  // Default to "Medium" if no "High Risk" found
-          }
+  }
+  
+  // **Ensure all sections have correct severity levels**
+  for (let section in sectionScores) {
+      if (sectionScores[section] === 0) {
+          sectionSeverity[section] = "Low";  // If no bad practices are detected, set to "Low"
+      } else if (!sectionSeverity[section]) {
+          sectionSeverity[section] = "Medium";  // Default to "Medium" if no "High Risk" found
       }
-      
-      // Output result formatted for Firebase
-      output = {
-          user_id: userId,
-          section_scores: sectionScores,
-          section_severity: sectionSeverity,
-          section_names: sectionNames
-      };
-      ```
-     7. **Click Continue**, then **Test & Review** to verify the scoring process.
-     8. **Check the output**:
-        - Scores are assigned to each section.
-        - Severity levels (Low, Medium, High) are correctly categorized.
-      ![image](https://github.com/user-attachments/assets/8ffaf555-9fbc-457d-85e4-7dba84d4fbd8)
-     9. **Publish the Zap** to automate the risk scoring process.
+  }
+  
+  // Output result formatted for Firebase
+  output = {
+      user_id: userId,
+      section_scores: sectionScores,
+      section_severity: sectionSeverity,
+      section_names: sectionNames
+  };
+  ```
+  7. **Click Continue**, then **Test & Review** to verify the scoring process.
+  8. **Check the output**:
+    - Scores are assigned to each section.
+    - Severity levels (Low, Medium, High) are correctly categorized.
+  ![image](https://github.com/user-attachments/assets/8ffaf555-9fbc-457d-85e4-7dba84d4fbd8)
+  9. **Publish the Zap** to automate the risk scoring process.
 
- - 12 **Action**: Store Scores
-     This step **saves the calculated scores for each section into Firebase Firestore** for future reference and further analysis.
-      1. **In Zapier**, add a new action.  
-      2. Select **"Firebase / Firestore"** as the action app.  
-      3. Choose **"Create Cloud Firestore Document"** as the action event.  
-      4. **Connect your Firebase Firestore account**.  
-      5. **Configure the request** containing **Collection:** `User Scores` (stores the section scores), **Document ID:** `user_id` (ensures scores are linked to the correct user), and **Data Fields:**  
-      ![image](https://github.com/user-attachments/assets/6a01809f-fc59-47c2-aa92-283fb918afff)
-      6. **Run a test** to confirm the scores are correctly stored in Firestore.
-      ![image](https://github.com/user-attachments/assets/5d7a0523-2630-47df-bdc7-3193f29a8b3b)
+[⬆ Back to Top](#table-of-contents)
+---
 
- - 13 **Action**: Match Practice with Business Risks Using Existing Responsible AI frameworks (Microsoft Responsible AI Standard)
-     This step **compares user responses about AI practices with Microsoft's Responsible AI Standards** to identify potential risks and alignment gaps. The output helps generate tailored recommendations.
-     1. **In Zapier**, add a new action.  
-     2. Select **"Code by Zapier"** as the action app.  
-     3. Choose **"Run Python"** as the action event.  
-     4. Click **Continue** to configure the code step.  
-     5. Under **Input Data**, set the following:  
-        - **Key:** `user_input`  
-        - **Value:** Select user responses from previous steps related to AI practices.
-        - **Key:** `markdown_text`  
-        - **Value:** Microsoft's Responsible AI Standard content.  
-         ![image](https://github.com/user-attachments/assets/32676929-f0d6-4e4a-90e4-4a35162a0136)
-     6. **In the code editor**, process the user responses:  
-        - Extract relevant responses regarding data privacy, bias mitigation, and AI risk factors. 
-        - Match these responses against Microsoft's Responsible AI Standard documentation.  
-        - Identify risk areas and gaps in compliance.  
-        - Format output as structured Markdown text.
-         ```
-         import re
-         import json
+#### Zap 12: Store Scores in Firebase
+
+ This step **saves the calculated scores for each section into Firebase Firestore** for future reference and further analysis.
+  1. **In Zapier**, add a new action.  
+  2. Select **"Firebase / Firestore"** as the action app.  
+  3. Choose **"Create Cloud Firestore Document"** as the action event.  
+  4. **Connect your Firebase Firestore account**.  
+  5. **Configure the request** containing **Collection:** `User Scores` (stores the section scores), **Document ID:** `user_id` (ensures scores are linked to the correct user), and **Data Fields:**  
+  ![image](https://github.com/user-attachments/assets/6a01809f-fc59-47c2-aa92-283fb918afff)
+  6. **Run a test** to confirm the scores are correctly stored in Firestore.
+  ![image](https://github.com/user-attachments/assets/5d7a0523-2630-47df-bdc7-3193f29a8b3b)
+
+[⬆ Back to Top](#table-of-contents)
+---
+
+#### Zap 13: Match Practice with AI Risk Frameworks
+
+ This step **compares user responses about AI practices with Microsoft's Responsible AI Standards** to identify potential risks and alignment gaps. The output helps generate tailored recommendations.
+ 1. **In Zapier**, add a new action.  
+ 2. Select **"Code by Zapier"** as the action app.  
+ 3. Choose **"Run Python"** as the action event.  
+ 4. Click **Continue** to configure the code step.  
+ 5. Under **Input Data**, set the following:  
+    - **Key:** `user_input`  
+    - **Value:** Select user responses from previous steps related to AI practices.
+    - **Key:** `markdown_text`  
+    - **Value:** Microsoft's Responsible AI Standard content.  
+     ![image](https://github.com/user-attachments/assets/32676929-f0d6-4e4a-90e4-4a35162a0136)
+ 6. **In the code editor**, process the user responses:  
+    - Extract relevant responses regarding data privacy, bias mitigation, and AI risk factors. 
+    - Match these responses against Microsoft's Responsible AI Standard documentation.  
+    - Identify risk areas and gaps in compliance.  
+    - Format output as structured Markdown text.
+     ```
+     import re
+     import json
+     
+     def parse_user_input_lines(user_input_raw):
+         """
+         Parse multi-line string into question->answer pairs. If it contains |1, record it as bad_practice.
+         The regex assumes each line is in a format like:
+           2.1. Some question ...?  {{someAnswer}} extra
+         If the format differs, the pattern may need adjustments.
+         """
+         user_dict = {}
+         bad_practices = {}
          
-         def parse_user_input_lines(user_input_raw):
-             """
-             Parse multi-line string into question->answer pairs. If it contains |1, record it as bad_practice.
-             The regex assumes each line is in a format like:
-               2.1. Some question ...?  {{someAnswer}} extra
-             If the format differs, the pattern may need adjustments.
-             """
-             user_dict = {}
-             bad_practices = {}
+         pattern = re.compile(r'^(.*?)\{\{(.*?)\}\}(.*)$')  
+         # Split into 3 groups:
+         # (1) question_part => (.*?) up to {{
+         # (2) braces => (.*?) inside the braces
+         # (3) remainder => (.*)$ possibly containing |1
+     
+         lines = user_input_raw.splitlines()
+         line_index = 0
+         for line in lines:
+             line_index += 1
+             line = line.strip()
+             if not line or line.startswith("-----"):
+                 # Skip empty lines & "----- Start of case..."
+                 continue
              
-             pattern = re.compile(r'^(.*?)\{\{(.*?)\}\}(.*)$')  
-             # Split into 3 groups:
-             # (1) question_part => (.*?) up to {{
-             # (2) braces => (.*?) inside the braces
-             # (3) remainder => (.*)$ possibly containing |1
-         
-             lines = user_input_raw.splitlines()
-             line_index = 0
-             for line in lines:
-                 line_index += 1
-                 line = line.strip()
-                 if not line or line.startswith("-----"):
-                     # Skip empty lines & "----- Start of case..."
-                     continue
-                 
-                 match = pattern.match(line)
-                 if match:
-                     question_part = match.group(1).strip()
-                     inside_braces = match.group(2).strip()
-                     remainder = match.group(3).strip()
-                     raw_answer = (inside_braces + " " + remainder).strip()
-                 else:
-                     question_part = f"Line{line_index}"
-                     raw_answer = line
-                 
-                 # Check for |1
-                 is_bad = ("|1" in line)
-                 clean_answer = raw_answer.replace("|1", "").strip()
-         
-                 # Store question->answer pair
-                 key = f"Line{line_index}: {question_part}"
-                 user_dict[key] = clean_answer
-         
-                 if is_bad:
-                     bad_practices[key] = clean_answer
+             match = pattern.match(line)
+             if match:
+                 question_part = match.group(1).strip()
+                 inside_braces = match.group(2).strip()
+                 remainder = match.group(3).strip()
+                 raw_answer = (inside_braces + " " + remainder).strip()
+             else:
+                 question_part = f"Line{line_index}"
+                 raw_answer = line
              
-             return user_dict, bad_practices
+             # Check for |1
+             is_bad = ("|1" in line)
+             clean_answer = raw_answer.replace("|1", "").strip()
+     
+             # Store question->answer pair
+             key = f"Line{line_index}: {question_part}"
+             user_dict[key] = clean_answer
+     
+             if is_bad:
+                 bad_practices[key] = clean_answer
          
-         def approx_token_count(text):
-             """
-             Simple approximation: In common English/ASCII text, 1 token ~ 3-4 characters.
-             Here, we assume every 4 characters ~ 1 token.
-             """
-             return int(len(text) / 4) + 1
+         return user_dict, bad_practices
+     
+     def approx_token_count(text):
+         """
+         Simple approximation: In common English/ASCII text, 1 token ~ 3-4 characters.
+         Here, we assume every 4 characters ~ 1 token.
+         """
+         return int(len(text) / 4) + 1
+     
+     def main(input_data):
+         # 1) Read the input passed from Zapier
+         user_input_raw = input_data.get("user_input", "").strip()
+         markdown_text = input_data.get("markdown_text", "")
+     
+         print("DEBUG: user_input_raw =", repr(user_input_raw))
+     
+         # 2) Parse multi-line input => user_dict, bad_practices
+         user_dict, bad_practices = parse_user_input_lines(user_input_raw)
+         print("DEBUG: user_dict =", user_dict)
+         print("DEBUG: bad_practices =", bad_practices)
+     
+         # 3) Define keywords to search in markdown_text
+         keywords = {
+             "PII": ["personal identifiable information", "PII", "user data", "sensitive data"],
+             "Data Sharing": ["third party", "vendor", "data sharing", "external AI", "uploaded files"],
+             "AI Fairness": ["bias", "fairness", "discrimination", "ethics"],
+             "Transparency": ["explainability", "decision making", "black box", "accountability"],
+             "HIGH RISK": ["High Risk"],
+             "MEDIUM RISK": ["Medium Risk"]
+         }
+     
+         # 4) Match snippets
+         matched_sections = {}
          
-         def main(input_data):
-             # 1) Read the input passed from Zapier
-             user_input_raw = input_data.get("user_input", "").strip()
-             markdown_text = input_data.get("markdown_text", "")
-         
-             print("DEBUG: user_input_raw =", repr(user_input_raw))
-         
-             # 2) Parse multi-line input => user_dict, bad_practices
-             user_dict, bad_practices = parse_user_input_lines(user_input_raw)
-             print("DEBUG: user_dict =", user_dict)
-             print("DEBUG: bad_practices =", bad_practices)
-         
-             # 3) Define keywords to search in markdown_text
-             keywords = {
-                 "PII": ["personal identifiable information", "PII", "user data", "sensitive data"],
-                 "Data Sharing": ["third party", "vendor", "data sharing", "external AI", "uploaded files"],
-                 "AI Fairness": ["bias", "fairness", "discrimination", "ethics"],
-                 "Transparency": ["explainability", "decision making", "black box", "accountability"],
-                 "HIGH RISK": ["High Risk"],
-                 "MEDIUM RISK": ["Medium Risk"]
-             }
-         
-             # 4) Match snippets
-             matched_sections = {}
+         # Token Limit -> you can adjust as needed (Claude 1/2 typical ~ 8k-100k tokens)
+         # Here, we use 4000 tokens as a safe limit for demonstration
+         MAX_TOKENS = 4000  
+         total_tokens_used = 0
+     
+         for question_key, answer_text in bad_practices.items():
+             matched_sections[question_key] = []
              
-             # Token Limit -> you can adjust as needed (Claude 1/2 typical ~ 8k-100k tokens)
-             # Here, we use 4000 tokens as a safe limit for demonstration
-             MAX_TOKENS = 4000  
-             total_tokens_used = 0
-         
-             for question_key, answer_text in bad_practices.items():
-                 matched_sections[question_key] = []
-                 
-                 # Remove duplicates
-                 used_snippets = set()
-         
-                 for category, word_list in keywords.items():
-                     for word in word_list:
-                         pattern2 = re.compile(re.escape(word), re.IGNORECASE)
-                         matches = [m.start() for m in pattern2.finditer(markdown_text)]
-                         
-                         for match_start in matches:
-                             # Option 1: Shorten snippet (+300 characters)
-                             snippet_start = max(0, match_start - 80)
-                             snippet_end   = min(len(markdown_text), match_start + 300)
-                             snippet = markdown_text[snippet_start:snippet_end]
-         
-                             # Option 3: Remove duplicates
-                             if snippet in used_snippets:
-                                 continue
-                             used_snippets.add(snippet)
-         
-                             # Option 5: Token limit
-                             snippet_tokens = approx_token_count(snippet)
-                             if total_tokens_used + snippet_tokens > MAX_TOKENS:
-                                 # If exceeding limit -> break and stop adding snippets
-                                 break
-                             else:
-                                 total_tokens_used += snippet_tokens
-         
-                             # Append snippet
-                             matched_sections[question_key].append({
-                                 "category": category,
-                                 "keyword": word,
-                                 "matched_text": snippet
-                             })
-                     # Check if token limit is reached
-                     if total_tokens_used >= MAX_TOKENS:
-                         break
+             # Remove duplicates
+             used_snippets = set()
+     
+             for category, word_list in keywords.items():
+                 for word in word_list:
+                     pattern2 = re.compile(re.escape(word), re.IGNORECASE)
+                     matches = [m.start() for m in pattern2.finditer(markdown_text)]
+                     
+                     for match_start in matches:
+                         # Option 1: Shorten snippet (+300 characters)
+                         snippet_start = max(0, match_start - 80)
+                         snippet_end   = min(len(markdown_text), match_start + 300)
+                         snippet = markdown_text[snippet_start:snippet_end]
+     
+                         # Option 3: Remove duplicates
+                         if snippet in used_snippets:
+                             continue
+                         used_snippets.add(snippet)
+     
+                         # Option 5: Token limit
+                         snippet_tokens = approx_token_count(snippet)
+                         if total_tokens_used + snippet_tokens > MAX_TOKENS:
+                             # If exceeding limit -> break and stop adding snippets
+                             break
+                         else:
+                             total_tokens_used += snippet_tokens
+     
+                         # Append snippet
+                         matched_sections[question_key].append({
+                             "category": category,
+                             "keyword": word,
+                             "matched_text": snippet
+                         })
+                 # Check if token limit is reached
                  if total_tokens_used >= MAX_TOKENS:
                      break
-         
-             # 5) Construct prompt
-             claude_prompt = (
-                 "## User's Bad Practices:\n"
-                 f"{json.dumps(bad_practices, indent=2)}\n\n"
-                 "## Related Microsoft AI Standard Sections:\n"
-                 f"{json.dumps(matched_sections, indent=2)}"
-             )
-         
-             # 6) Output results
-             output = {
-                 "prompt": claude_prompt,
-                 "bad_practices": bad_practices,
-                 "matched_sections": matched_sections,
-                 "parsed_lines": user_dict
-             }
-             return output
-         
-         # Zapier code by Zapier entry point
-         result = main(input_data)
-         return result
-         
-         ```
-     7. Click **Continue**, then **Test & Review** to validate the matching process.  
-     8. Check that the output includes matched risks and reference sections from Microsoft’s standard.
-      ![image](https://github.com/user-attachments/assets/9600a525-fa25-4a4e-92e1-963800131cd0)
-
- - 14 **Action**: Provide specific recommendations to practices that pose business risks
-     This Zap uses **API Calls** to analyze AI practices flagged as risky and generate structured improvement recommendations based on responsible AI frameworks.Here's the example of Claude.
-      1. **In Zapier**, add a new action.  
-      2. Select **"Anthropic (Claude)"** as the action app.  
-      3. Choose **"Send Message"** as the action event.  
-      4. Click **Continue** to configure the message prompt.  
-      5. Under **User Message**, set the following:  
-         - **Prompt**: Select the `prompt` field from Zap 13, which contains the **user’s practices** and the **matched Responsible AI Standard sections**.  
-         - **Message Instruction**: Include a structured instruction for Claude to analyze the input and provide detailed improvement suggestions.  
-      ![image](https://github.com/user-attachments/assets/dce51e67-a0e8-49f9-bfa9-44c8451008c9)
-
-
- - 15 **Action**: Validation on Recommendations Accuracy
-     This step **validates the AI-generated recommendations** to ensure they accurately align with the **Matched Responsible AI Standard requirements**. It verifies correctness, notes inaccuracies, and refines the output for **final analysis**. You can add multiple API calls for validation purpose. (recommended)
-      ![image](https://github.com/user-attachments/assets/115a4937-187b-47de-a19e-9fb357b8cf1e)
-      1. **In Zapier**, add a new action.  
-      2. Select **"Anthropic (Claude)"** as the action app.  
-      3. Choose **"Send Message"** as the action event.  
-      4. Click **Continue** to configure the message prompt.  
-      5. Under **User Message**, set the following:  
-         - **Expert Recommendations**: Use the `analysis_results` field from Zap 14, containing **generated recommendations**.  
-         - **Raw User RiskyPractices with Matched AI Standard**: Use the `prompt` field from Zap 13, ensuring validation against **original risk areas**.  
-
- - 16 **Action**: Process and Format Validated Recommendations
-     This step **processes the validated Responsible AI recommendations from the previous step**, formats them into structured text, and prepares them for **storage and display in reports**.
-      ![image](https://github.com/user-attachments/assets/8b18d956-11e1-4c6e-9ae9-8fffbb7b0c65)
-      1. **In Zapier**, add a new action.  
-      2. Select **"Code by Zapier"** as the action app.  
-      3. Choose **"Run Javascript"** as the action event.  
-      4. Click **Continue** to configure the code step.  
-      5. Under **Input Data**, set the following:  
-         - **Key:** `raw_json_output`  
-         - **Value:** Select `analysis_results` JSON output from **Zap 15** (validated recommendations).
-      ![image](https://github.com/user-attachments/assets/45bf8bda-536c-47e3-bd3d-f10bace721ed)
-      6. **In the code editor**, add code that **parses, processes, and structures the validated AI recommendations**:
-         - **Extracts relevant details**: AI practice, associated risks, and suggested improvements. 
-         - **Formats recommendations** into structured text, ensuring **readability and clarity**.  
-         - **Filters out "No risky practices identified"** entries to **avoid clutter**.  
-         - **Adds numbering (e.g., "analysis_results 1", "analysis_results 2")** for structured outputs.
-         ```
-         // 1) Retrieve the raw JSON string from the previous LLM step
-         const rawJson = inputData.raw_json_output;
-         
-         try {
-           // 2) Parse the raw string into a JS object
-           const parsed = JSON.parse(rawJson);
-         
-           // We'll build a new object "outputFields" so that each array item becomes 
-           // "analysis_results 1", "analysis_results 2", etc.
-           let outputFields = {};
-         
-           // If we have an array: parsed.analysis_results
-           if (parsed.analysis_results && Array.isArray(parsed.analysis_results)) {
-             parsed.analysis_results.forEach((item, index) => {
-               // The key "analysis_results 1" or "analysis_results 2" etc.
-               const keyName = `analysis_results ${index + 1}`;
-         
-               // Extract fields
-               const section = item["section"] || "";
-               const practice = item["your practice"] || "";
-               const risky = item["why it is risky"] || "";
-         
-               // If recommendations is an array => join with bullet
-               let recValue = item["recommendations"];
-               if (Array.isArray(recValue)) {
-                 recValue = recValue.join("\n- ");  // produce bullet lines
-                 recValue = `- ${recValue}`.trim(); 
-               } else if (typeof recValue !== "string") {
-                 recValue = "";
-               }
-         
-               // If "your practice" is exactly "No risky practices identified", skip entire item
-               if (practice === "No risky practices identified") {
-                 // do nothing: no outputFields[keyName], so we won't see "analysis_results 2" etc.
-                 return; 
-               }
-         
-               // Construct a single text block with line breaks
-               let bigText = 
-                 `Your Practice: ${practice}\n\n` +
-                 `Why It Is Risky: ${risky}\n\n` +
-                 `Recommendations:\n${recValue}\n\n`;
-         
-               // Store in outputFields
-               outputFields[keyName] = bigText.trim();
-             });
-           }
-         
-           // Return the final object
-           return outputFields;
-         
-         } catch (error) {
-           return {
-             error: "Invalid JSON or parse error",
-             details: error.toString()
-           };
+             if total_tokens_used >= MAX_TOKENS:
+                 break
+     
+         # 5) Construct prompt
+         claude_prompt = (
+             "## User's Bad Practices:\n"
+             f"{json.dumps(bad_practices, indent=2)}\n\n"
+             "## Related Microsoft AI Standard Sections:\n"
+             f"{json.dumps(matched_sections, indent=2)}"
+         )
+     
+         # 6) Output results
+         output = {
+             "prompt": claude_prompt,
+             "bad_practices": bad_practices,
+             "matched_sections": matched_sections,
+             "parsed_lines": user_dict
          }
-         
-         ```
+         return output
+     
+     # Zapier code by Zapier entry point
+     result = main(input_data)
+     return result
+     
+     ```
+ 7. Click **Continue**, then **Test & Review** to validate the matching process.  
+ 8. Check that the output includes matched risks and reference sections from Microsoft’s standard.
+  ![image](https://github.com/user-attachments/assets/9600a525-fa25-4a4e-92e1-963800131cd0)
 
- - 17 **Action**: Store Customized Recommendations
-     This step **saves the structured Responsible AI recommendations into Firestore**, associating them with the respective user for future reference and report updates.
-      1. **In Zapier**, add a new action.  
-      2. Select **"Firebase / Firestore"** as the action app.  
-      3. Choose **"Create Cloud Firestore Document"** as the action event.  
-      4. Click **Continue** to configure the Firestore step.  
-      5. Under **Collection**, set the value to:  
-         - `Generated_Customized_Recommendations`  
-      6. Set **Convert Numerics** to **True**.  
-      7. Under **Document ID**, set:  
-         - **Key:** `Email`  
-         - **Value:** Select the user’s email from the previous steps.  
-      8. Under **Data**, map the sections to the formatted analysis results from **Zap 16**.
-      ![image](https://github.com/user-attachments/assets/e766e43a-0aed-44f8-8f4b-27ed96a03eaf)
-      ![image](https://github.com/user-attachments/assets/b524b087-2c4e-4d0c-ac78-42e9a7184245)
+[⬆ Back to Top](#table-of-contents)
+---
 
- - 18 **Action**: Update Report & Recommendations in Webflow
-     This step **updates the AI-generated assessment report and compliance recommendations in Webflow**, making the results accessible to users.
-      1. **In Zapier**, add a new action.  
-      2. Select **"Webflow"** as the action app.  
-      3. Choose **"Update Live Item"** as the action event.  
-      4. Click **Continue** to configure Webflow.
-      5. Configure your report contents and map the Required Fields:
-      ![image](https://github.com/user-attachments/assets/8aae6930-c735-4360-a24d-95975f07a500)
-      6. Click **Continue** to proceed.  
-      7. Click **Test** to verify Webflow updates with the correct data.  
-      8. Once successful, **Publish** the Zap to make it live.  
+#### Zap 14: Provide Responsible AI Recommendations
 
- - 19 **Action**: Update Response Status in Firebase Firestore 
-     This step **updates the response status in Firebase Firestore** to indicate that the recommendation process has been completed for a given user.
-      1. **In Zapier**, add a new action.  
-      2. Select **"Firebase / Firestore"** as the action app.  
-      3. Choose **"Create Cloud Firestore Document"** as the action event.  
-      4. Click **Continue** to configure the Firestore settings.  
-      5. Under **Setup Action**, configure the following:
-         ![image](https://github.com/user-attachments/assets/c2dc1529-15bc-45a2-b99d-4eeb1e19fb9a)
-         - **Collection**: `Response_Status`
-         - **Convert Numerics**: Set to `True`
-         - **Document ID**: Select the user's email (`Field Data Email`)
-         - **Data Fields**:
-           - `slug`: Select **Final Slug** from the previous step.
-           - `completed`: Set this field to `true` to mark completion.
-           - `Item ID`: Select the corresponding **ID** from Webflow.
-      7. Click **Continue**, then **Test & Review** to ensure the Firestore record is updated.        ![image](https://github.com/user-attachments/assets/8d9fbabb-0448-491a-a6bf-0824bc552c56)
-      8. If successful, click **Publish** to finalize the step.
+ This Zap uses **API Calls** to analyze AI practices flagged as risky and generate structured improvement recommendations based on responsible AI frameworks.Here's the example of Claude.
+  1. **In Zapier**, add a new action.  
+  2. Select **"Anthropic (Claude)"** as the action app.  
+  3. Choose **"Send Message"** as the action event.  
+  4. Click **Continue** to configure the message prompt.  
+  5. Under **User Message**, set the following:  
+     - **Prompt**: Select the `prompt` field from Zap 13, which contains the **user’s practices** and the **matched Responsible AI Standard sections**.  
+     - **Message Instruction**: Include a structured instruction for Claude to analyze the input and provide detailed improvement suggestions.  
+  ![image](https://github.com/user-attachments/assets/dce51e67-a0e8-49f9-bfa9-44c8451008c9)
 
-3. Test your Zapier workflows.
+[⬆ Back to Top](#table-of-contents)
+---
 
-### **Step 4: Build a survey flow**
+#### Zap 15: Validate Recommendations
+
+ This step **validates the AI-generated recommendations** to ensure they accurately align with the **Matched Responsible AI Standard requirements**. It verifies correctness, notes inaccuracies, and refines the output for **final analysis**. You can add multiple API calls for validation purpose. (recommended)
+  ![image](https://github.com/user-attachments/assets/115a4937-187b-47de-a19e-9fb357b8cf1e)
+  1. **In Zapier**, add a new action.  
+  2. Select **"Anthropic (Claude)"** as the action app.  
+  3. Choose **"Send Message"** as the action event.  
+  4. Click **Continue** to configure the message prompt.  
+  5. Under **User Message**, set the following:  
+     - **Expert Recommendations**: Use the `analysis_results` field from Zap 14, containing **generated recommendations**.  
+     - **Raw User RiskyPractices with Matched AI Standard**: Use the `prompt` field from Zap 13, ensuring validation against **original risk areas**.  
+
+[⬆ Back to Top](#table-of-contents)
+---
+
+#### Zap 16: Process and Format Validated Recommendations
+
+ This step **processes the validated Responsible AI recommendations from the previous step**, formats them into structured text, and prepares them for **storage and display in reports**.
+  ![image](https://github.com/user-attachments/assets/8b18d956-11e1-4c6e-9ae9-8fffbb7b0c65)
+  1. **In Zapier**, add a new action.  
+  2. Select **"Code by Zapier"** as the action app.  
+  3. Choose **"Run Javascript"** as the action event.  
+  4. Click **Continue** to configure the code step.  
+  5. Under **Input Data**, set the following:  
+     - **Key:** `raw_json_output`  
+     - **Value:** Select `analysis_results` JSON output from **Zap 15** (validated recommendations).
+  ![image](https://github.com/user-attachments/assets/45bf8bda-536c-47e3-bd3d-f10bace721ed)
+  6. **In the code editor**, add code that **parses, processes, and structures the validated AI recommendations**:
+     - **Extracts relevant details**: AI practice, associated risks, and suggested improvements. 
+     - **Formats recommendations** into structured text, ensuring **readability and clarity**.  
+     - **Filters out "No risky practices identified"** entries to **avoid clutter**.  
+     - **Adds numbering (e.g., "analysis_results 1", "analysis_results 2")** for structured outputs.
+     ```
+     // 1) Retrieve the raw JSON string from the previous LLM step
+     const rawJson = inputData.raw_json_output;
+     
+     try {
+       // 2) Parse the raw string into a JS object
+       const parsed = JSON.parse(rawJson);
+     
+       // We'll build a new object "outputFields" so that each array item becomes 
+       // "analysis_results 1", "analysis_results 2", etc.
+       let outputFields = {};
+     
+       // If we have an array: parsed.analysis_results
+       if (parsed.analysis_results && Array.isArray(parsed.analysis_results)) {
+         parsed.analysis_results.forEach((item, index) => {
+           // The key "analysis_results 1" or "analysis_results 2" etc.
+           const keyName = `analysis_results ${index + 1}`;
+     
+           // Extract fields
+           const section = item["section"] || "";
+           const practice = item["your practice"] || "";
+           const risky = item["why it is risky"] || "";
+     
+           // If recommendations is an array => join with bullet
+           let recValue = item["recommendations"];
+           if (Array.isArray(recValue)) {
+             recValue = recValue.join("\n- ");  // produce bullet lines
+             recValue = `- ${recValue}`.trim(); 
+           } else if (typeof recValue !== "string") {
+             recValue = "";
+           }
+     
+           // If "your practice" is exactly "No risky practices identified", skip entire item
+           if (practice === "No risky practices identified") {
+             // do nothing: no outputFields[keyName], so we won't see "analysis_results 2" etc.
+             return; 
+           }
+     
+           // Construct a single text block with line breaks
+           let bigText = 
+             `Your Practice: ${practice}\n\n` +
+             `Why It Is Risky: ${risky}\n\n` +
+             `Recommendations:\n${recValue}\n\n`;
+     
+           // Store in outputFields
+           outputFields[keyName] = bigText.trim();
+         });
+       }
+     
+       // Return the final object
+       return outputFields;
+     
+     } catch (error) {
+       return {
+         error: "Invalid JSON or parse error",
+         details: error.toString()
+       };
+     }
+     
+     ```
+
+[⬆ Back to Top](#table-of-contents)
+---
+
+#### Zap 17: Store Customized Recommendations
+
+ This step **saves the structured Responsible AI recommendations into Firestore**, associating them with the respective user for future reference and report updates.
+  1. **In Zapier**, add a new action.  
+  2. Select **"Firebase / Firestore"** as the action app.  
+  3. Choose **"Create Cloud Firestore Document"** as the action event.  
+  4. Click **Continue** to configure the Firestore step.  
+  5. Under **Collection**, set the value to:  
+     - `Generated_Customized_Recommendations`  
+  6. Set **Convert Numerics** to **True**.  
+  7. Under **Document ID**, set:  
+     - **Key:** `Email`  
+     - **Value:** Select the user’s email from the previous steps.  
+  8. Under **Data**, map the sections to the formatted analysis results from **Zap 16**.
+  ![image](https://github.com/user-attachments/assets/e766e43a-0aed-44f8-8f4b-27ed96a03eaf)
+  ![image](https://github.com/user-attachments/assets/b524b087-2c4e-4d0c-ac78-42e9a7184245)
+
+[⬆ Back to Top](#table-of-contents)
+---
+
+#### Zap 18: Update Report & Recommendations in Webflow
+
+ This step **updates the AI-generated assessment report and compliance recommendations in Webflow**, making the results accessible to users.
+  1. **In Zapier**, add a new action.  
+  2. Select **"Webflow"** as the action app.  
+  3. Choose **"Update Live Item"** as the action event.  
+  4. Click **Continue** to configure Webflow.
+  5. Configure your report contents and map the Required Fields:
+  ![image](https://github.com/user-attachments/assets/8aae6930-c735-4360-a24d-95975f07a500)
+  6. Click **Continue** to proceed.  
+  7. Click **Test** to verify Webflow updates with the correct data.  
+  8. Once successful, **Publish** the Zap to make it live.  
+
+[⬆ Back to Top](#table-of-contents)
+---
+
+#### Zap 19: Update Response Status in Firebase Firestore
+
+ This step **updates the response status in Firebase Firestore** to indicate that the recommendation process has been completed for a given user.
+  1. **In Zapier**, add a new action.  
+  2. Select **"Firebase / Firestore"** as the action app.  
+  3. Choose **"Create Cloud Firestore Document"** as the action event.  
+  4. Click **Continue** to configure the Firestore settings.  
+  5. Under **Setup Action**, configure the following:
+     ![image](https://github.com/user-attachments/assets/c2dc1529-15bc-45a2-b99d-4eeb1e19fb9a)
+     - **Collection**: `Response_Status`
+     - **Convert Numerics**: Set to `True`
+     - **Document ID**: Select the user's email (`Field Data Email`)
+     - **Data Fields**:
+       - `slug`: Select **Final Slug** from the previous step.
+       - `completed`: Set this field to `true` to mark completion.
+       - `Item ID`: Select the corresponding **ID** from Webflow.
+  7. Click **Continue**, then **Test & Review** to ensure the Firestore record is updated.        ![image](https://github.com/user-attachments/assets/8d9fbabb-0448-491a-a6bf-0824bc552c56)
+  8. If successful, click **Publish** to finalize the step.
+
+[⬆ Back to Top](#table-of-contents)
+---
+
+
+###  4️⃣ Build a Survey Flow
 RADARs uses **Inputflow** to create dynamic survey flows and branching logic.
 
 #### 🛠️ **Setting Up Inputflow in Webflow**
@@ -1189,15 +1237,24 @@ RADARs uses **Inputflow** to create dynamic survey flows and branching logic.
    - Use **Zapier** to send collected data to **Firebase Firestore**.  
    - Test by filling out a form and verifying data storage.  
 
-5. **Final Check:** Preview the survey, validate navigation between steps, and ensure responses trigger the right follow-up questions. 
+5. **Final Check:** Preview the survey, validate navigation between steps, and ensure responses trigger the right follow-up questions.
 
-### **Step 4: Configure AI Report**
+[⬆ Back to Top](#table-of-contents)
+---
+
+### 5️⃣ Configure AI Report
 1. The system uses **OpenAI API (or Claude API)** to analyze inputs.
 2. If you want to customize AI-generated reports:
    - Modify API prompts in Zapier.
    - Use a different AI model if needed.
 
-### **Step 5: Deploy Your Webflow App**
+[⬆ Back to Top](#table-of-contents)
+---
+
+### 6️⃣ Deploy Your Webflow App
 1. Publish your Webflow project using Webflow’s hosting.
 ![image](https://github.com/user-attachments/assets/00c5345f-6063-4a15-ac9f-ba7785569c1e)
 2. Test your pages and functions.
+
+[⬆ Back to Top](#table-of-contents)
+---
