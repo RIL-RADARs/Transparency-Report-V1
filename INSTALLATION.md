@@ -4,7 +4,7 @@ This guide provides step-by-step instructions on how to:
 1. **Use the RADARs prototype**
 2. **Build a similar Webflow-based web app** for AI transparency reporting
 
-## 📌 Table of Contents
+## Table of Contents
 
 - [1️⃣ Access the Live Prototype](#1️⃣-access-the-live-prototype)
 - [2️⃣ How to Build Your Own Web App](#2️⃣-how-to-build-your-own-web-app)
@@ -629,7 +629,7 @@ This step **generates a unique slug** based on the user's name. The slug is used
 [⬆ Back to Top](#table-of-contents)
 ---
 
-#### Zap 3: Webflow CMS - Create Live Item
+#### Zap 3: Webflow CMS Create Live Item
 
 This step **sends user input data** (including the generated slug) to **Webflow CMS** to store user reports.
 1. **In Zapier**, add a new action.
@@ -648,7 +648,7 @@ This step **sends user input data** (including the generated slug) to **Webflow 
 [⬆ Back to Top](#table-of-contents)
 ---
 
-#### Zap 4: Firebase Firestore - Store User Responses
+#### Zap 4: Firebase Firestore Store User Responses
 
 This step **saves user responses** from Webflow into **Firebase Firestore** for storage and later report generation.
 1. **In Zapier**, add a new action.
@@ -666,35 +666,43 @@ This step **saves user responses** from Webflow into **Firebase Firestore** for 
 9. Click **Test & Review** to verify that the data is correctly stored in Firestore.
 ![image](https://github.com/user-attachments/assets/efd45149-4ffa-4530-8be6-91cee4f059ff)
 
- - 5 **Action**: API Call - Generate AI Transparency Report
-     This step sends user responses to **Claude AI** to generate a structured **AI transparency report**. Here's the example of Anthropic (Claude) API call.
-      ![image](https://github.com/user-attachments/assets/d272ebab-8854-4d88-9c7f-e440c87e1ea1)
-      1. **In Zapier**, add a new action.
-      2. Select **"Anthropic (Claude)"** as the app.
-      3. Choose **"Send Message"** as the action event.
-      4. Connect your **Claude AI account**.
-      5. **Configure the request:**
-         - Use the user’s responses (from Firebase) as input.
-         - Ensure the output is in **structured JSON format**.
-         - Include instructions to **strictly follow user input** and **not generate assumptions**.
-      6. **Run a test** to confirm Claude generates a valid report.
-      7. **Check the output** for proper formatting.
-      8. **Publish the Zap** to automate report generation.
+[⬆ Back to Top](#table-of-contents)
+---
 
- - 6 **Action**: 
-     This step **ensures the AI-generated report accurately reflects user input** while improving professionalism and compliance. Here's the example of Anthropic (Claude) API call.
-      ![image](https://github.com/user-attachments/assets/2b13cac3-2fe6-48d0-9020-df3a688836ae)
-      1. **In Zapier**, add a new action.
-      2. Select **"Anthropic (Claude)"** as the app.
-      3. Choose **"Send Message"** as the action event.
-      4. **Connect your Claude AI account**.
-      5. **Configure the request**:
-         - Send the **initial AI-generated report** (from Zap 5).
-         - Include **user input for reference**.
-         - Instruct the AI to **match user input exactly**, correct errors, and enhance clarity.
-      6. **Run a test** to confirm Claude refines the report accurately.
-      7. **Check the output** to ensure it aligns with user input.
-      8. **Publish the Zap** to automate report verification.
+#### Zap 5: AI Report Generation
+
+ This step sends user responses to **Claude AI** to generate a structured **AI transparency report**. Here's the example of Anthropic (Claude) API call.
+  ![image](https://github.com/user-attachments/assets/d272ebab-8854-4d88-9c7f-e440c87e1ea1)
+  1. **In Zapier**, add a new action.
+  2. Select **"Anthropic (Claude)"** as the app.
+  3. Choose **"Send Message"** as the action event.
+  4. Connect your **Claude AI account**.
+  5. **Configure the request:**
+     - Use the user’s responses (from Firebase) as input.
+     - Ensure the output is in **structured JSON format**.
+     - Include instructions to **strictly follow user input** and **not generate assumptions**.
+  6. **Run a test** to confirm Claude generates a valid report.
+  7. **Check the output** for proper formatting.
+  8. **Publish the Zap** to automate report generation.
+
+[⬆ Back to Top](#table-of-contents)
+---
+
+#### Zap 6: Validate AI-Generated Reports
+
+ This step **ensures the AI-generated report accurately reflects user input** while improving professionalism and compliance. Here's the example of Anthropic (Claude) API call.
+  ![image](https://github.com/user-attachments/assets/2b13cac3-2fe6-48d0-9020-df3a688836ae)
+  1. **In Zapier**, add a new action.
+  2. Select **"Anthropic (Claude)"** as the app.
+  3. Choose **"Send Message"** as the action event.
+  4. **Connect your Claude AI account**.
+  5. **Configure the request**:
+     - Send the **initial AI-generated report** (from Zap 5).
+     - Include **user input for reference**.
+     - Instruct the AI to **match user input exactly**, correct errors, and enhance clarity.
+  6. **Run a test** to confirm Claude refines the report accurately.
+  7. **Check the output** to ensure it aligns with user input.
+  8. **Publish the Zap** to automate report verification.
 
  - 7 **Action**: Format AI-Generated Report into JSON
      This step ensures the AI-generated report is correctly structured in JSON format before storing it in Firebase.
