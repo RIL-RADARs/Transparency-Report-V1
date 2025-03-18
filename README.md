@@ -66,7 +66,9 @@ Ensure you have:
 
 ## Building Your Own Version
 
-If you want to customize or extend this project for your startup's specific needs, follow these steps:
+If you want to customize or extend this project for your startup's specific needs, follow the steps in [INSTALLATION](INSTALLATION.md) file.
+
+Here is an overview of the steps:
 
 ### 1. Set Up Your Own Firebase Database
 - Create a Firebase project and enable Firestore.
