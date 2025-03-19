@@ -1452,10 +1452,13 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 });
 </script>
+```
+
+
+
 
 <img width="1512" alt="Screenshot 2025-03-19 at 10 54 12" src="https://github.com/user-attachments/assets/9359ba45-8664-49cf-9ef6-c4d0b8ca0f9a" />
 <img width="1512" alt="Screenshot 2025-03-19 at 10 55 05" src="https://github.com/user-attachments/assets/98551ffb-223b-48cb-aeec-7a7f735062d5" />
-
 
 
 #### 4. Success card and Risky card
@@ -1559,7 +1562,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
 <img width="1512" alt="Screenshot 2025-03-19 at 11 01 52" src="https://github.com/user-attachments/assets/620bb3ec-1054-4ccc-aa29-1144835b6f8f" />
 
-
+```
 
 
 
@@ -1711,7 +1714,7 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 </script>
 
-
+```
 <img width="1473" alt="Screenshot 2025-03-19 at 10 46 27" src="https://github.com/user-attachments/assets/fc79a522-daaf-4852-97ec-314bf50d9555" />
 
 
