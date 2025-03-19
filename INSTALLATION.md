@@ -1249,6 +1249,473 @@ RADARs uses **Inputflow** to create dynamic survey flows and branching logic.
 2. If you want to customize AI-generated reports:
    - Modify API prompts in Zapier.
    - Use a different AI model if needed.
+   - 
+#### 1. Webflow Backend CMS Collection
+
+1. **Create a New CMS Collection**  
+   - In your Webflow Dashboard, open the project.  
+   - Go to **CMS** → **Add Collection**.  
+   - Name it (e.g., “AI Transparency Reports”).  
+   - Add relevant fields (see “Example Fields” below).
+
+2. **Structuring Data**  
+   - Each CMS item can represent an entire report or a specific section.
+   - Keep fields clear and consistent for easy integration with the front end.
+
+3. **Connecting to External Tools**  
+   - If using Zapier or a custom API, grab your **Webflow API Key** from Project Settings.
+   - In Zapier, create steps that **Create/Update CMS Item** in Webflow whenever changes occur.
+
+4. **Best Practices**  
+   - Use descriptive field names (e.g., `dataProvenance`, `modelTraining`).  
+   - Make use of Rich Text fields if you need formatting (lists, bold text, etc.).
+
+##### Example Fields (Short & Sweet)
+
+- **Baseline Model**: Short text about the AI’s base architecture  
+- **Intended Use Cases**: One-liner on primary scenarios (e.g., “clinical triage”)  
+- **Industry**: e.g., “Healthcare,” “Finance”  
+- **Data Provenance**: Where training data is sourced (public, private)  
+- **Data Usage**: Brief explanation of usage (e.g., training, feedback loops)  
+- **Model Training**: Key aspects of model training or fine-tuning  
+- **Security**: Approach to encryption, access control  
+- **Fairness & Bias**: High-level bias testing or balanced datasets  
+- **SectionX Name/Score**: Custom label and numeric risk levels (1–10)  
+- **Risk Severity**: Simple label (“Low,” “Medium,” “High”)  
+- **Complete**: Boolean to mark if the report is finished
+<img width="1512" alt="Screenshot 2025-03-18 at 18 06 10" src="https://github.com/user-attachments/assets/4abd9f11-045c-4922-b29f-8c9bd601df90" />
+
+---
+
+#### 2. Webflow Frontend Page
+
+1. **Design a Template Page**  
+   - In the Webflow Designer, create a Page or Template that displays your CMS data.  
+   - Use **Collection Lists/Pages** to bind fields (e.g., Baseline Model) to text blocks.
+
+2. **Bind Data Fields**  
+   - Drag a **Collection List** into the canvas.  
+   - Connect it to your “AI Transparency Reports” CMS Collection.  
+   - Map each field (e.g., Data Usage → `dataUsage`) to a corresponding text or Rich Text element.
+
+3. **Style the Layout**  
+   - Adjust fonts, spacing, colors in the **Style Panel**.  
+   - Add buttons for **Edit** or **Download** if needed.
+
+4. **Optional: Embed Custom Code**  
+   - For advanced interactivity, embed HTML/JS to manipulate the displayed data.  
+   - Make sure your script references the correct CMS fields if you want dynamic updates.
+
+5. **Tips & Tricks**  
+   - Use staging environments to test changes.  
+   - Preview content as different roles (e.g., editor, collaborator) to confirm access and visibility.
+<img width="1512" alt="Screenshot 2025-03-18 at 18 16 46" src="https://github.com/user-attachments/assets/67d2d67b-621b-4dc5-99b4-1312f6ce92d7" />
+
+---
+
+#### 3. Report Editing
+
+1. **Editable vs. Display Containers**  
+   - **Display Container**: Shown by default, presents the current report section content.  
+   - **Edit Container**: Hidden initially; contains input fields for users to modify the text.  
+   - **Toggle Logic**: When the user clicks an **“Edit”** button:  
+     1. **Display Container** is hidden.  
+     2. **Edit Container** is shown, allowing the user to make changes.  
+     3. Upon clicking **“Save,”** the updates are sent (via Zapier) to a Firebase backend.  
+     4. The backend processes or stores these changes and forwards them back to the **Webflow CMS**.  
+     5. After the CMS is updated, the **Display Container** refreshes with the new content.
+
+
+4. **Edit Flow Example**  
+   1. **User clicks “Edit" Button**  
+   2. **Display Container** is hidden; **Edit Container** is revealed with form fields populated by the current section text.  
+   3. **User modifies** text and clicks **“Save.”**  
+   4. **Zapier** sends updated content to **Firebase** (server-side).  
+   5. **Firebase** updates the relevant fields and triggers a **CMS Update** in Webflow.  
+   6. **Page refreshes** or re-renders to show the newly saved text in the **Display Container** again.
+
+5. **Advanced Tips**  
+   - If you need a **WYSIWYG** editor with more formatting options, consider integrating a tool like **Quill** or **TipTap** in a custom admin panel.  
+   - Display a **changelog** or **history** to show who edited which sections and when.
+  
+Below is a breakdown of how this script enables **editable sections** in a Webflow page (or any webpage). It uses **Zapier** as an intermediary to handle data saving/updating. The script listens for user interactions on “Edit” and “Save” buttons, toggles visibility of containers, and sends updates to Zapier.
+
+```html
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  console.log("✅ Script Loaded: Webflow Editable Sections");
+  
+  // Helper function to retrieve the current item ID
+  function getCurrentItemID() {
+    // 1) Prefer the email from localStorage if available
+    const userEmail = localStorage.getItem("userEmail");
+    if (userEmail) return userEmail;
+    
+    // 2) Otherwise, as a fallback, use the final part of the URL path (slug)
+    const pathParts = window.location.pathname.split('/');
+    const slug = pathParts[pathParts.length - 1];
+    return slug || '';
+  }
+
+  // --- EDIT BUTTON EVENT LISTENER ---
+  document.querySelectorAll(".edit-button").forEach(button => {
+    button.addEventListener("click", function() {
+      // 1) Find the nearest container that wraps this section
+      let section = this.closest(".editable-section");
+      if (!section) return;
+      
+      // 2) Retrieve the current item ID and store in a data attribute
+      const itemID = getCurrentItemID();
+      section.setAttribute('data-id', itemID);
+      console.log("✏️ Editing section:", section, "with ID:", itemID);
+      
+      // 3) Hide the display container and show the edit container
+      section.querySelector(".display-container").style.display = "none";
+      section.querySelector(".edit-container").style.display = "block";
+      
+      // 4) Populate the edit fields with existing text
+      section.querySelectorAll(".edit-field").forEach(input => {
+        let fieldKey = input.getAttribute("data-name")?.trim();
+        let displayField = section.querySelector(`.display-field[data-name='${fieldKey}']`);
+        if (displayField) {
+          input.value = displayField.innerText.trim();
+        }
+      });
+    });
+  });
+
+  // --- SAVE BUTTON EVENT LISTENER ---
+  document.querySelectorAll(".save-button").forEach(button => {
+    button.addEventListener("click", function() {
+      // 1) Identify the closest editable section
+      let section = this.closest(".editable-section");
+      if (!section) return;
+      
+      // 2) Retrieve the item ID and the section type
+      const itemID = getCurrentItemID();
+      let sectionType = section.getAttribute("data-section")?.trim();
+
+      // 3) Build a data object to pass to Zapier
+      let updatedData = {
+        itemID: itemID,
+        userEmail: localStorage.getItem("userEmail"),
+        userName: localStorage.getItem("userName"),
+        userSlug: localStorage.getItem("userSlug")
+      };
+      
+      // 4) Gather form data from all fields in the edit container
+      section.querySelectorAll(".edit-field").forEach(input => {
+        let fieldKey = input.getAttribute("data-name")?.trim();
+        if (fieldKey) {
+          updatedData[fieldKey] = input.value.trim();
+        }
+      });
+
+      // 5) Determine which Zapier webhook to use based on section type
+      const zapierURL = sectionType === "company" 
+        ? "https://hooks.zapier.com/hooks/catch/21445374/2agkb7d/"
+        : "https://hooks.zapier.com/hooks/catch/21445374/2w6gjtu/";
+
+      console.log("Sending data to Zapier:", updatedData);
+      
+      // 6) POST the updatedData to Zapier
+      fetch(zapierURL, {
+        method: "POST",
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        mode: 'no-cors',
+        body: JSON.stringify(updatedData)
+      })
+      .then(() => {
+        console.log(`✅ Data sent successfully to ${sectionType} webhook`);
+        alert(`✅ Changes saved for ${sectionType}!`);
+        
+        // 7) Update the display fields with the new text
+        section.querySelectorAll(".display-field").forEach(display => {
+          let fieldKey = display.getAttribute("data-name")?.trim();
+          if (updatedData[fieldKey]) {
+            display.innerText = updatedData[fieldKey];
+          }
+        });
+        
+        // 8) Hide the edit container and show the display container again
+        section.querySelector(".edit-container").style.display = "none";
+        section.querySelector(".display-container").style.display = "block";
+      })
+      .catch(error => {
+        console.error("❌ Save Error:", error);
+        alert("⚠️ Failed to save. Please check console.");
+      });
+    });
+  });
+});
+</script>
+
+<img width="1512" alt="Screenshot 2025-03-19 at 10 54 12" src="https://github.com/user-attachments/assets/9359ba45-8664-49cf-9ef6-c4d0b8ca0f9a" />
+<img width="1512" alt="Screenshot 2025-03-19 at 10 55 05" src="https://github.com/user-attachments/assets/98551ffb-223b-48cb-aeec-7a7f735062d5" />
+
+
+
+#### 4. Success card and Risky card
+
+This script is responsible for managing the display of **risk cards** (elements with the class `.risk-card`) and a **success card** (with the class `.success-card`). It examines each `.risk-card` to see if its `.risk-number` contains a non-empty and non-zero value. If a card’s `.risk-number` is `0` or empty, that card is hidden. Once the script has evaluated all cards, it checks whether any cards remain visible. If **no** risk cards are visible, it shows the `.success-card`; otherwise, it hides the success card.
+
+##### How It Works
+
+1. **Query for Cards & Success Card**  
+   The script locates all `.risk-card` elements and a single `.success-card` element.  
+   It logs how many `.risk-card` elements it finds, helping you debug if they’re not being recognized.
+
+2. **Check `.risk-number`**  
+   Each card is expected to have a child element with `.risk-number`.  
+   If `.risk-number` is missing, that card is automatically hidden.  
+   If `.risk-number` text is `"0"` or empty, the card is again hidden.
+
+3. **Counting Visible Cards**  
+   The `visibleCards` counter increments whenever a non-zero risk card is shown.  
+   This allows the script to know if **any** risk remains.
+
+4. **Showing the Success Card**  
+   If `visibleCards` is `0` after checking all `.risk-card` elements, the script concludes there are no visible risks.  
+   It then sets the `.success-card` to `display: block`. If there’s at least one risk card visible, `.success-card` is hidden instead.
+
+5. **Use Cases**  
+   - Ideal for dashboards or reporting pages where you list potential risk categories.  
+   - If all categories are at “0” or irrelevant, the user immediately sees a “No Risk” or “All Clear” message (the success card).
+
+6. **Styling**  
+   By default, the script uses inlined CSS (`style.display = "none"` or `"block"`).  
+   You can also add or remove classes for more advanced styling transitions.
+
+7. **Placement**  
+   Ensure that `.risk-card` and `.success-card` elements exist in the DOM **before** this script is included.  
+   In Webflow, you’d typically place this in the **Footer Code** or after the elements in a custom `<embed>` block.
+
+8. **Debug Logs**  
+   The script includes `console.log()` statements to trace which elements are being hidden or shown.  
+   Open your **browser’s DevTools** console to see these logs and diagnose any unexpected behavior.
+
+
+Below is the **full script** you can place in your `.md` documentation or project README to explain how the functionality works and provide the exact code:
+
+---
+
+```html
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  console.log("=== Debug: Script is running ===");
+
+  // 1. Get all risk-card elements & the success-card
+  const riskCards = document.querySelectorAll(".risk-card");
+  const successCard = document.querySelector(".success-card");
+
+  console.log("Found " + riskCards.length + " risk-cards.");
+
+  // Will track how many cards remain visible after processing
+  let visibleCards = 0;
+
+  // 2. Iterate over each .risk-card
+  riskCards.forEach((card, index) => {
+    // Locate the .risk-number within the card
+    const riskNumberEl = card.querySelector(".risk-number");
+
+    // If there's no .risk-number element, hide the card immediately
+    if (!riskNumberEl) {
+      console.log("Card #" + index + " has NO .risk-number element. Hiding card.");
+      card.style.display = "none";
+      return;
+    }
+
+    // Read the text content of .risk-number
+    const textContent = riskNumberEl.textContent.trim();
+    console.log("Card #" + index + " risk-number text:", `"${textContent}"`);
+
+    // If it's "0" or empty, hide the card; otherwise, show it
+    if (textContent === "0" || textContent === "") {
+      console.log("Card #" + index + " is 0 or empty, hiding.");
+      card.style.display = "none";
+    } else {
+      console.log("Card #" + index + " is NOT 0/empty, showing.");
+      card.style.display = "block";
+      visibleCards++;
+    }
+  });
+
+  // 3. If no cards are visible, show the success card; otherwise hide it
+  if (successCard) {
+    if (visibleCards === 0) {
+      successCard.style.display = "block";
+      console.log("No visible cards. Showing success-card.");
+    } else {
+      successCard.style.display = "none";
+      console.log("There is at least one visible card. Hiding success-card.");
+    }
+  }
+});
+</script>
+
+
+<img width="1512" alt="Screenshot 2025-03-19 at 11 01 52" src="https://github.com/user-attachments/assets/620bb3ec-1054-4ccc-aa29-1144835b6f8f" />
+
+
+
+
+
+
+---
+
+#### 4. Report Download
+
+1. **Approach 1: Third-Party PDF Tools**  
+   - Use a service like [Print Friendly & PDF](https://www.printfriendly.com/).  
+   - Add a “Download as PDF” button that triggers the conversion of the visible page.
+
+2. **Approach 2: Custom PDF Generation**  
+   - On your server (Node.js, Python, etc.), fetch the CMS data, render an HTML template, and convert to PDF (using **Puppeteer**, **pdfkit**, etc.).  
+   - Provide a download link to the user (`/download-report/:id`).
+
+3. **Approach 3: In-Page Generation with html2canvas & jsPDF**  
+   - Embed the script below in your Webflow page (usually in the **Before </body>** section under Project Settings or directly on the page’s custom code area).
+   - Create a button with `id="download-pdf"`.
+   - Ensure you have container elements (e.g., `container-1`, `container-2`, etc.) that wrap each section you want captured in the PDF.
+
+```html
+<!-- Include the libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+  /* Optional: Remove white backgrounds to allow your gradient or image to show through. */
+  .no-white-bg {
+    background: transparent !important;
+  }
+</style>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const { jsPDF } = window.jspdf;
+    const downloadBtn = document.getElementById("download-pdf");
+
+    // List of container IDs that hold different parts of your report
+    const containerIds = ["container-1", "container-2", "container-3", "container-4", "container-5", "container-6"];
+
+    // 1) Your gradient or background image:
+    //    Replace with a valid URL or Data URL to match your brand/theme.
+    //    Example below is just a placeholder image from Webflow’s CDN.
+    const gradientImageDataURL = "https://cdn.prod.website-files.com/677dc834ff0ea40eb8b99402/67d339c7cfa63bb2e876da3b_image%20480.png";
+
+    downloadBtn.addEventListener("click", function () {
+      // 2) Create jsPDF for an A4 (portrait)
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+
+      // Set margins to control the content placement
+      const marginLeft = 10;
+      const marginTop = 10;
+      const marginBottom = 10;
+      const usableWidth = pdfWidth - marginLeft * 2;
+      const usableHeight = pdfHeight - marginTop - marginBottom;
+
+      let isFirstContainer = true;
+
+      // 3) Process each container in sequence
+      function processContainer(index) {
+        if (index >= containerIds.length) {
+          // Once all containers are processed, save the PDF
+          pdf.save("Responsible_AI_Disclosure_Report.pdf");
+          return;
+        }
+
+        const containerId = containerIds[index];
+        const containerEl = document.getElementById(containerId);
+
+        // If the container doesn't exist, skip to the next
+        if (!containerEl) {
+          processContainer(index + 1);
+          return;
+        }
+
+        // ──────────────────────────────────────────────────────────────────────
+        // EXAMPLE: Condition for container-2 (or any container with dynamic fields)
+        // If the user left some text area empty, hide it before capturing.
+        // ──────────────────────────────────────────────────────────────────────
+        if (containerId === "container-2") {
+          const mdaContainerEl = containerEl.querySelector(".display-container");
+          if (mdaContainerEl) {
+            const displayFieldEl = mdaContainerEl.querySelector(".display-field");
+            if (displayFieldEl) {
+              const textContent = displayFieldEl.textContent.trim();
+              if (!textContent) {
+                // Hide the entire sub-container if it's empty
+                mdaContainerEl.style.display = "none";
+              }
+            }
+          }
+        }
+
+        // 4) Capture the container with html2canvas
+        html2canvas(containerEl, {
+          scale: 1.5, // Increase for better quality, but note larger file sizes
+          backgroundColor: null,
+          ignoreElements: (element) => {
+            // Ignore buttons, "no-print" elements, etc.
+            if (element.tagName.toLowerCase() === 'button') return true;
+            if (element.classList && element.className.includes("no-print")) return true;
+            return false;
+          }
+        }).then((canvas) => {
+          // Convert canvas to image data
+          const imgData = canvas.toDataURL("image/png");
+
+          // Scale height to fit the PDF width
+          const imgHeight = (canvas.height * usableWidth) / canvas.width;
+
+          // 5) For all but the first container, add a new page
+          if (!isFirstContainer) {
+            pdf.addPage();
+          } else {
+            isFirstContainer = false;
+          }
+
+          // 6) Draw the background first
+          pdf.addImage(
+            gradientImageDataURL,
+            "PNG",
+            0,       // x
+            0,       // y
+            pdfWidth, // fill entire width
+            pdfHeight // fill entire height
+          );
+
+          // 7) Place the container screenshot
+          pdf.addImage(
+            imgData,
+            "PNG",
+            marginLeft,
+            marginTop,
+            usableWidth,
+            imgHeight
+          );
+
+          // 8) Move on to the next container
+          processContainer(index + 1);
+        });
+      }
+
+      // Start the recursive process
+      processContainer(0);
+    });
+  });
+</script>
+
+
+<img width="1473" alt="Screenshot 2025-03-19 at 10 46 27" src="https://github.com/user-attachments/assets/fc79a522-daaf-4852-97ec-314bf50d9555" />
+
+
+   
 
 [⬆ Back to Top](#table-of-contents)
 ---
